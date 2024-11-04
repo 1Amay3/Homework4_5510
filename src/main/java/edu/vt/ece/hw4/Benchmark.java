@@ -16,9 +16,10 @@ public class Benchmark {
 
     public static void main(String[] args) throws Exception {
         String mode = args.length <= 0 ? "normal" : args[0];
-        String lockClass = (args.length <= 1 ? BACKOFFLOCK : args[1]);
-        int threadCount = (args.length <= 2 ? 32 : Integer.parseInt(args[2]));
+        String lockClass = (args.length <= 1 ? ALOCK : args[1]);
+        int threadCount = (args.length <= 2 ? 16 : Integer.parseInt(args[2]));
         int totalIters = (args.length <= 3 ? 64000 : Integer.parseInt(args[3]));
+        String strategy = (args.length <= 4 ? "fixed" : args[4]);
         int iters = totalIters / threadCount;
 
         run(args, mode, lockClass, threadCount, iters);
@@ -58,9 +59,11 @@ public class Benchmark {
                     runLongCS(lock, threadCount, iters);
                     break;
                 case "barrier":
-                    Barrier b = new ArrayBarrier()Barrier(threadCount);
-                    runBarrierCS(lock,threadCount,iters);
+                    TTASBarrier b = new TTASBarrier(threadCount);
+                    ArrayBarrier c = new ArrayBarrier(threadCount);
+                    runBarrierCS(lock,threadCount,iters,b);
                     break;
+                //throw new UnsupportedOperationException("Complete this.");
                 default:
                     throw new UnsupportedOperationException("Implement this");
             }
@@ -132,13 +135,13 @@ public class Benchmark {
         System.out.println("Average time per thread is " + totalTime / threadCount + "ms");
     }
 
-    static void runBarrierCS(Lock lock, int threadCount , int iters) throws Exception{
+    static void runBarrierCS(Lock lock, int threadCount , int iters , TTASBarrier barrier) throws Exception{
         final Counter counter = new Counter(0);
         final BarrierCSTestThread[] threads = new BarrierCSTestThread[threadCount];
         BarrierCSTestThread.reset();
 
         for (int t = 0; t < threadCount; t++) {
-            threads[t] = new BarrierCSTestThread(lock, counter, iters);
+            threads[t] = new BarrierCSTestThread(lock, counter, iters, barrier);
         }
 
         for (int t = 0; t < threadCount; t++) {
