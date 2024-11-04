@@ -1,5 +1,6 @@
 package edu.vt.ece.hw4;
 
+import edu.vt.ece.hw4.barriers.ArrayBarrier;
 import edu.vt.ece.hw4.barriers.Barrier;
 import edu.vt.ece.hw4.barriers.TTASBarrier;
 import edu.vt.ece.hw4.bench.*;
@@ -57,10 +58,9 @@ public class Benchmark {
                     runLongCS(lock, threadCount, iters);
                     break;
                 case "barrier":
-                    Barrier b = new TTASBarrier(threadCount);
+                    Barrier b = new ArrayBarrier()Barrier(threadCount);
                     runBarrierCS(lock,threadCount,iters);
                     break;
-                    //throw new UnsupportedOperationException("Complete this.");
                 default:
                     throw new UnsupportedOperationException("Implement this");
             }
